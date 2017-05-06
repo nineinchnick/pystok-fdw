@@ -1,0 +1,4 @@
+falcon~=1.1.0
+SQLAlchemy~=1.1.5
+alchemyjsonschema~=0.4.2
+git+https://github.com/Opentopic/falcon-api.git@v1.1.6#egg=opentopic-falcon-api

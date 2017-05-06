@@ -1,0 +1,14 @@
+version: "2"
+services:
+    pystok-fdw:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - api
+    api:
+        build:
+            context: api
+            dockerfile: Dockerfile
+        ports:
+            - "80:80"
