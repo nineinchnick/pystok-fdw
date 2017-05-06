@@ -16,5 +16,5 @@ RUN /app/venv/bin/pip install -r /app/requirements.txt gunicorn
 
 COPY . /app/src/
 WORKDIR /app/src/
-CMD sqlite3 mydatabase.db < init.sql
+RUN sqlite3 mydatabase.db < init.sql
 CMD /app/venv/bin/gunicorn -b 0.0.0.0:80 --reload app

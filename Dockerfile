@@ -7,7 +7,8 @@ RUN apt-get update \
 RUN pgxn install multicorn
 RUN pip install requests
 
-COPY setup.sql /docker-entrypoint-initdb.d/
+ARG API_URL
+COPY setup.sh /docker-entrypoint-initdb.d/
 COPY src /src
 WORKDIR /src
 RUN python setup.py install

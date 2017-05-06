@@ -49,7 +49,12 @@ x-api-total:
 ## FDW
 
 ```bash
-docker build -t pystok-fdw .
-docker run --name pystok-fdw -e POSTGRES_PASSWORD=mysecretpassword -d pystok-fdw
+docker build --build-arg API_URL="http://api:80" -t pystok-fdw .
+docker run --name pystok-fdw -e POSTGRES_PASSWORD=pystok --link api:api -d pystok-fdw
 docker run -it --rm --link pystok-fdw:postgres postgres psql -h postgres -U postgres
+```
+
+```sql
+SET client_min_messages = DEBUG;
+SELECT * FROM users;
 ```

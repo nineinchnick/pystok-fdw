@@ -4,6 +4,8 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+        environment:
+            API_URL: 'http://api:80'
         depends_on:
             - api
     api:
