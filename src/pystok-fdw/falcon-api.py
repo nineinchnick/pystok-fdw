@@ -47,17 +47,20 @@ class FalconApiFDW(ForeignDataWrapper):
             params['{}__{}'.format(qual.field_name, op)] = qual.value
         return params
 
-    def execute(self, quals, columns):
-        params = self.params.copy()
-        params.update(self.get_params(quals))
-        response = requests.get(self.options['url'],
-                                params=params)
+    def log_response(self, response):
         log_to_postgres('Request: {} {} {}'.format(response.request.method,
                                                    response.request.url,
                                                    response.request.body),
                         level=logging.DEBUG)
         log_to_postgres('Response: ' + response.text,
                         level=logging.DEBUG)
+
+    def execute(self, quals, columns):
+        params = self.params.copy()
+        params.update(self.get_params(quals))
+        response = requests.get(self.options['url'],
+                                params=params)
+        self.log_response(response)
         results = []
         for result in response.json()['results']:
             for attribute, value in result.iteritems():
@@ -71,20 +74,24 @@ class FalconApiFDW(ForeignDataWrapper):
         return self._rowid_column
 
     def insert(self, new_values):
+        data = {key: value
+                for key, value in new_values.iteritems()
+                if value is not None}
         response = requests.post(self.options['url'],
                                  params=self.params,
-                                 json=new_values)
+                                 json=data)
+        self.log_response(response)
         return response.json()
 
-    def update(self, old_values, new_values):
-        pk = new_values.pop('id')
-        response = requests.put('{}/{}'.format(self.options['url'], pk),
+    def update(self, rowid, new_values):
+        response = requests.put('{}/{}'.format(self.options['url'], rowid),
                                 params=self.params,
                                 json=new_values)
+        self.log_response(response)
         return response.json()
 
-    def delete(self, old_values):
-        pk = old_values.pop('id')
-        response = requests.delete('{}/{}'.format(self.options['url'], pk),
+    def delete(self, rowid):
+        response = requests.delete('{}/{}'.format(self.options['url'], rowid),
                                    params=self.params)
+        self.log_response(response)
         return response.json()
