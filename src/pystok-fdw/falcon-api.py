@@ -7,7 +7,7 @@ from multicorn import ForeignDataWrapper
 from multicorn.utils import log_to_postgres
 
 OPERATORS = {
-    '=': 'eq',
+    '=': 'exact',
     '<': 'lt',
     '>': 'gt',
     '<=': 'le',
@@ -27,6 +27,7 @@ class FalconApiFDW(ForeignDataWrapper):
         super(FalconApiFDW, self).__init__(options, columns)
         self.columns = columns
         self.options = options
+        self._rowid_column = columns.keys()[0]
         self.params = {}
         if 'params' in self.options:
             self.params = urlparse.parse_qs(self.options['params'])
@@ -65,17 +66,21 @@ class FalconApiFDW(ForeignDataWrapper):
             results.append(result)
         return results
 
+    @property
+    def rowid_column(self):
+        return self._rowid_column
+
     def insert(self, new_values):
         response = requests.post(self.options['url'],
                                  params=self.params,
-                                 data=new_values)
+                                 json=new_values)
         return response.json()
 
     def update(self, old_values, new_values):
         pk = new_values.pop('id')
         response = requests.put('{}/{}'.format(self.options['url'], pk),
                                 params=self.params,
-                                data=new_values)
+                                json=new_values)
         return response.json()
 
     def delete(self, old_values):
